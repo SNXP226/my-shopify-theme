@@ -1,0 +1,135 @@
+{%- comment -%} Worth Becoming – footer {%- endcomment -%}
+{%- assign menu = linklists[section.settings.menu] -%}
+<footer class="wb-footer" style="--wb-f-bg: {{ section.settings.background }}; --wb-f-fg: {{ section.settings.text_color }}; --wb-f-accent: {{ section.settings.accent_color }};">
+  <div class="wb-footer__top">
+    <div class="wb-footer__brand">
+      <p class="wb-footer__big">{{ section.settings.big_text }}</p>
+      <p class="wb-footer__line">{{ section.settings.tagline }}</p>
+    </div>
+
+    <div class="wb-footer__col">
+      <p class="wb-footer__label">Shop</p>
+      <ul role="list">
+        {%- for link in menu.links -%}
+          <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </div>
+
+    <div class="wb-footer__col">
+      <p class="wb-footer__label">Follow</p>
+      <ul role="list">
+        {%- if section.settings.instagram != blank -%}<li><a href="{{ section.settings.instagram }}" target="_blank" rel="noopener">Instagram</a></li>{%- endif -%}
+        {%- if section.settings.tiktok != blank -%}<li><a href="{{ section.settings.tiktok }}" target="_blank" rel="noopener">TikTok</a></li>{%- endif -%}
+        {%- if section.settings.email != blank -%}<li><a href="mailto:{{ section.settings.email }}">{{ section.settings.email }}</a></li>{%- endif -%}
+      </ul>
+    </div>
+
+    <div class="wb-footer__col wb-footer__signup">
+      <p class="wb-footer__label">{{ section.settings.signup_heading }}</p>
+      {%- form 'customer', class: 'wb-footer__form' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        {%- if form.posted_successfully? -%}
+          <p class="wb-footer__ok">You're on the list.</p>
+        {%- else -%}
+          <label class="wb-footer__sr" for="wb-footer-email">Email</label>
+          <input id="wb-footer-email" type="email" name="contact[email]" placeholder="your@email.com" required autocomplete="email">
+          <button type="submit">Join</button>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  </div>
+
+  <div class="wb-footer__bottom">
+    <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</span>
+    <span>{{ section.settings.bottom_text }}</span>
+  </div>
+</footer>
+
+<style>
+  .wb-footer {
+    background: var(--wb-f-bg);
+    color: var(--wb-f-fg);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+  .wb-footer a { color: inherit; text-decoration: none; }
+  .wb-footer a:hover { color: var(--wb-f-accent); }
+  .wb-footer ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .wb-footer__top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.6fr;
+    gap: 40px;
+    padding: clamp(48px, 7vw, 88px) clamp(16px, 3vw, 36px) 48px;
+  }
+  .wb-footer__big {
+    margin: 0;
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 0.88;
+    letter-spacing: 0.01em;
+  }
+  .wb-footer__line { margin: 16px 0 0; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.2em; }
+  .wb-footer__label { margin: 0 0 16px; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.65rem; }
+  .wb-footer__form { display: flex; border: 1px solid currentColor; }
+  .wb-footer__form input[type='email'] {
+    flex: 1;
+    min-width: 0;
+    padding: 13px 14px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+  .wb-footer__form input::placeholder { color: inherit; opacity: 0.4; }
+  .wb-footer__form button {
+    padding: 0 20px;
+    border: 0;
+    background: var(--wb-f-fg);
+    color: var(--wb-f-bg);
+    font: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+  }
+  .wb-footer__form button:hover { background: var(--wb-f-accent); color: #fff; }
+  .wb-footer__ok { margin: 0; padding: 13px 14px; }
+  .wb-footer__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .wb-footer__bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 18px clamp(16px, 3vw, 36px);
+    border-top: 1px solid rgb(255 255 255 / 0.14);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.62rem;
+    opacity: 0.7;
+  }
+  @media (max-width: 899px) {
+    .wb-footer__top { grid-template-columns: 1fr 1fr; }
+    .wb-footer__brand, .wb-footer__signup { grid-column: 1 / -1; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "WB Footer",
+  "class": "wb-footer-section",
+  "settings": [
+    { "type": "text", "id": "big_text", "label": "Big text", "default": "Worth Becoming" },
+    { "type": "text", "id": "tagline", "label": "Tagline", "default": "Relentless. Undeterred. Earned." },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" },
+    { "type": "text", "id": "instagram", "label": "Instagram", "default": "https://www.instagram.com/worthbecomingswe" },
+    { "type": "text", "id": "tiktok", "label": "TikTok", "default": "https://www.tiktok.com/@worthbecomingswe" },
+    { "type": "text", "id": "email", "label": "Contact email", "default": "shopworthbecoming@gmail.com" },
+    { "type": "text", "id": "signup_heading", "label": "Sign-up heading", "default": "Get the drop first" },
+    { "type": "text", "id": "bottom_text", "label": "Bottom text", "default": "No future? Build one." },
+    { "type": "color", "id": "background", "label": "Background", "default": "#1C1C1C" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#E6E0D4" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B3161B" }
+  ]
+}
+{% endschema %}
