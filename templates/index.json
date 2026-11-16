@@ -6,11 +6,84 @@
  * or related systems. Please exercise caution as any changes
  * made to this file may be overwritten.
  * ------------------------------------------------------------
- */{
+ */
+{
   "sections": {
+    "wb_rack_WtdLyi": {
+      "type": "wb-rack",
+      "name": "WB Clothing rack",
+      "settings": {
+        "collection": "",
+        "products_to_show": 8,
+        "heading": "FW26 — The Rack",
+        "hint": "Pick a piece",
+        "button_label": "View product",
+        "preorder_label": "Pre-order",
+        "sold_out_label": "Sold out",
+        "garment_height": 300,
+        "overlap": 70,
+        "show_ticker": true,
+        "ticker_text": "Relentless / Undeterred / Earned / No future? Build one.",
+        "wall_color": "#E6E0D4",
+        "text_color": "#1C1C1C",
+        "accent_color": "#B3161B",
+        "ticker_background": "#B3161B",
+        "ticker_text_color": "#F2EEE6"
+      }
+    },
     "clothing_rack": {
       "type": "clothing-rack",
-      "settings": {}
+      "disabled": true,
+      "settings": {
+        "collection": "",
+        "products_to_show": 9,
+        "blend_backgrounds": true,
+        "draw_hangers": false,
+        "hanger_style": "wood",
+        "section_height": 90,
+        "garment_height": 340,
+        "spacing": 48,
+        "photo_shift": 0,
+        "use_brand_fonts": true,
+        "heading": "",
+        "hint": "",
+        "shop_label": "Shop now",
+        "back_label": "Back",
+        "close_label": "Close",
+        "sold_out_label": "Sold out",
+        "show_ticker": true,
+        "ticker_text": "Relentless ✦ Undeterred ✦ Earned ✦ No future? Build one.",
+        "ticker_separator": "✦",
+        "background_color": "#eceae6",
+        "text_color": "#1f1e1c",
+        "ticker_background": "#1f1e1c",
+        "ticker_text_color": "#e6dfd1",
+        "accent_color": "#c8102e"
+      }
+    },
+    "drop_countdown": {
+      "type": "drop-countdown",
+      "settings": {
+        "drop_date": "2026-11-27",
+        "drop_time": "00:00",
+        "utc_offset": "+01:00",
+        "show_logo": true,
+        "eyebrow": "Drop 01",
+        "heading": "Thermal Henley",
+        "subheading": "27.11.2026 · No future? Build one.",
+        "live_text": "The drop is live",
+        "live_button": "Shop the drop",
+        "live_link": "shopify://collections/all",
+        "show_signup": true,
+        "email_placeholder": "Your email",
+        "button_label": "Join the list",
+        "small_print": "Be first in line when it drops. No spam.",
+        "success_text": "You're on the list. Stay relentless.",
+        "customer_tags": "waitlist, thermal-henley",
+        "background_color": "#1f1e1c",
+        "text_color": "#e6dfd1",
+        "accent_color": "#c8102e"
+      }
     },
     "hero_jVaWmY": {
       "type": "hero",
@@ -61,6 +134,7 @@
         "text_YLPk4p",
         "button_H9gpTf"
       ],
+      "disabled": true,
       "name": "t:names.hero",
       "settings": {
         "media_type_1": "image",
@@ -69,6 +143,7 @@
         "custom_mobile_media": false,
         "media_type_1_mobile": "image",
         "media_type_2_mobile": "image",
+        "link": "",
         "open_in_new_tab": false,
         "content_direction": "column",
         "vertical_on_mobile": true,
@@ -90,8 +165,7 @@
         "reflection_opacity": 75,
         "padding-block-start": 100,
         "padding-block-end": 72
-      },
-      "disabled": true
+      }
     },
     "product_list_fa6P9H": {
       "type": "product-list",
@@ -266,6 +340,7 @@
           ]
         }
       },
+      "disabled": true,
       "name": "Featured collection",
       "settings": {
         "collection": "all",
@@ -285,15 +360,11 @@
         "color_scheme": "scheme-1",
         "padding-block-start": 48,
         "padding-block-end": 48
-      },
-      "disabled": true
-    },
-    "drop_countdown": {
-      "type": "drop-countdown",
-      "settings": {}
+      }
     }
   },
   "order": [
+    "wb_rack_WtdLyi",
     "clothing_rack",
     "drop_countdown",
     "hero_jVaWmY",
