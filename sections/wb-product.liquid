@@ -1,0 +1,319 @@
+{%- comment -%} Worth Becoming – product page: big photo on the left, details on the right. {%- endcomment -%}
+{%- assign current = product.selected_or_first_available_variant -%}
+{%- assign start_image = current.featured_image | default: product.featured_image -%}
+
+<wb-product class="wb-product" style="--wb-p-dark: {{ section.settings.media_background }}; --wb-p-light: {{ section.settings.panel_background }}; --wb-p-ink: {{ section.settings.text_color }}; --wb-p-accent: {{ section.settings.accent_color }};">
+  <div class="wb-product__media">
+    <a class="wb-product__back" href="{{ routes.root_url }}">&larr; Back to the rack</a>
+    <div class="wb-product__stage">
+      {%- if start_image -%}
+        <img class="wb-product__main" src="{{ start_image | image_url: width: 1800 }}" alt="{{ start_image.alt | default: product.title | escape }}" width="{{ start_image.width }}" height="{{ start_image.height }}" data-main>
+      {%- else -%}
+        {{ 'apparel-1' | placeholder_svg_tag: 'wb-product__main wb-product__placeholder' }}
+      {%- endif -%}
+    </div>
+    {%- if product.images.size > 1 -%}
+      <div class="wb-product__thumbs" role="list">
+        {%- for image in product.images -%}
+          <button type="button" class="wb-product__thumb{% if image.id == start_image.id %} is-active{% endif %}" data-thumb="{{ image | image_url: width: 1800 }}" data-image-id="{{ image.id }}" aria-label="Show photo {{ forloop.index }}">
+            <img src="{{ image | image_url: width: 160 }}" alt="" width="80" height="80" loading="lazy">
+          </button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  <div class="wb-product__panel">
+    <div class="wb-product__inner">
+      <p class="wb-product__eyebrow">{{ shop.name }}{% if product.type != blank %} / {{ product.type }}{% endif %}</p>
+      <h1 class="wb-product__title">{{ product.title }}</h1>
+      <p class="wb-product__price">
+        <span data-price>{{ current.price | money }}</span>
+        <s data-compare>{% if current.compare_at_price > current.price %}{{ current.compare_at_price | money }}{% endif %}</s>
+      </p>
+
+      {%- form 'product', product, class: 'wb-product__form' -%}
+        <input type="hidden" name="id" value="{{ current.id }}" data-variant-id>
+
+        {%- unless product.has_only_default_variant -%}
+          {%- for option in product.options_with_values -%}
+            <fieldset class="wb-product__option">
+              <legend>{{ option.name }} <span data-option-label="{{ forloop.index0 }}">{{ option.selected_value }}</span></legend>
+              <div class="wb-product__choices">
+                {%- assign option_index = forloop.index0 -%}
+                {%- for value in option.values -%}
+                  <label class="wb-product__choice">
+                    <input type="radio" name="wb-option-{{ option_index }}" value="{{ value.name | escape }}" data-option="{{ option_index }}"{% if option.selected_value == value.name %} checked{% endif %}>
+                    <span>{{ value.name }}</span>
+                  </label>
+                {%- endfor -%}
+              </div>
+            </fieldset>
+          {%- endfor -%}
+        {%- endunless -%}
+
+        <button type="submit" name="add" class="wb-product__add" data-add{% unless current.available %} disabled{% endunless %}>
+          {%- if current.available -%}{{ section.settings.add_label }}{%- else -%}{{ section.settings.sold_out_label }}{%- endif -%}
+        </button>
+        {%- if section.settings.note != blank -%}
+          <p class="wb-product__note">{{ section.settings.note }}</p>
+        {%- endif -%}
+      {%- endform -%}
+
+      {%- if product.description != blank -%}
+        <div class="wb-product__desc">{{ product.description }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.shipping_text != blank -%}
+        <details class="wb-product__more">
+          <summary>{{ section.settings.shipping_heading }}</summary>
+          <div>{{ section.settings.shipping_text }}</div>
+        </details>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <script type="application/json" data-variants>
+    [
+      {%- for v in product.variants -%}
+        {"id": {{ v.id }}, "options": {{ v.options | json }}, "available": {{ v.available | json }}, "price": {{ v.price | money | json }}, "compare": {% if v.compare_at_price > v.price %}{{ v.compare_at_price | money | json }}{% else %}""{% endif %}, "image": {% if v.featured_image %}{{ v.featured_image | image_url: width: 1800 | json }}{% else %}null{% endif %}, "imageId": {% if v.featured_image %}{{ v.featured_image.id }}{% else %}null{% endif %}}{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  </script>
+</wb-product>
+
+<style>
+  .wb-product {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(340px, 1fr);
+    min-height: calc(100svh - var(--wb-header-h, 64px));
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    color: var(--wb-p-ink);
+  }
+  .wb-product__media {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 30%, rgb(255 255 255 / 0.09), transparent 70%),
+      var(--wb-p-dark);
+    color: #e6e0d4;
+  }
+  .wb-product__back {
+    position: absolute;
+    top: 20px;
+    left: clamp(16px, 3vw, 32px);
+    z-index: 2;
+    color: inherit;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    opacity: 0.7;
+  }
+  .wb-product__back:hover { opacity: 1; }
+  .wb-product__stage {
+    position: sticky;
+    top: var(--wb-header-h, 64px);
+    flex: 1;
+    display: grid;
+    place-items: center;
+    min-height: min(80svh, 860px);
+    padding: 64px clamp(16px, 4vw, 64px) 24px;
+  }
+  .wb-product__main {
+    width: 100%;
+    max-height: calc(100svh - var(--wb-header-h, 64px) - 160px);
+    object-fit: contain;
+    filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.5));
+    transition: opacity 0.25s;
+  }
+  .wb-product__main.is-fading { opacity: 0; }
+  .wb-product__placeholder { fill: rgb(255 255 255 / 0.2); }
+  .wb-product__thumbs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px 24px;
+    flex-wrap: wrap;
+  }
+  .wb-product__thumb {
+    all: unset;
+    width: 64px;
+    height: 64px;
+    border: 1px solid rgb(255 255 255 / 0.15);
+    cursor: pointer;
+    opacity: 0.6;
+  }
+  .wb-product__thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .wb-product__thumb.is-active, .wb-product__thumb:hover { opacity: 1; border-color: #e6e0d4; }
+
+  .wb-product__panel { background: var(--wb-p-light); }
+  .wb-product__inner {
+    position: sticky;
+    top: var(--wb-header-h, 64px);
+    max-width: 480px;
+    padding: clamp(32px, 6vw, 72px) clamp(20px, 3vw, 48px);
+  }
+  .wb-product__eyebrow {
+    margin: 0 0 14px;
+    font-size: 0.62rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+  .wb-product__title {
+    margin: 0;
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-weight: 400;
+    font-size: clamp(2.4rem, 4vw, 3.6rem);
+    line-height: 0.92;
+    letter-spacing: 0.01em;
+    color: inherit;
+  }
+  .wb-product__price { margin: 14px 0 32px; font-size: 0.9rem; letter-spacing: 0.06em; }
+  .wb-product__price s { margin-left: 8px; opacity: 0.45; }
+  .wb-product__option { margin: 0 0 22px; padding: 0; border: 0; }
+  .wb-product__option legend {
+    margin-bottom: 10px;
+    padding: 0;
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .wb-product__option legend span { margin-left: 6px; opacity: 1; font-weight: 600; }
+  .wb-product__choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
+  .wb-product__choice { position: relative; cursor: pointer; }
+  .wb-product__choice input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .wb-product__choice span {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 1px solid rgb(0 0 0 / 0.22);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .wb-product__choice:hover span { border-color: var(--wb-p-ink); }
+  .wb-product__choice input:checked + span { background: var(--wb-p-ink); color: var(--wb-p-light); border-color: var(--wb-p-ink); }
+  .wb-product__choice input:focus-visible + span { outline: 2px solid var(--wb-p-accent); outline-offset: 2px; }
+  .wb-product__choice.is-unavailable span { opacity: 0.4; text-decoration: line-through; }
+  .wb-product__add {
+    width: 100%;
+    margin-top: 10px;
+    padding: 18px;
+    border: 0;
+    background: var(--wb-p-ink);
+    color: var(--wb-p-light);
+    font: inherit;
+    font-size: 0.75rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .wb-product__add:hover:not([disabled]) { background: var(--wb-p-accent); color: #fff; }
+  .wb-product__add[disabled] { opacity: 0.45; cursor: not-allowed; }
+  .wb-product__note { margin: 12px 0 0; font-size: 0.65rem; letter-spacing: 0.08em; opacity: 0.6; }
+  .wb-product__desc {
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid rgb(0 0 0 / 0.14);
+    font-size: 0.78rem;
+    line-height: 1.75;
+  }
+  .wb-product__desc ul { padding-left: 1.1em; }
+  .wb-product__more { border-top: 1px solid rgb(0 0 0 / 0.14); border-bottom: 1px solid rgb(0 0 0 / 0.14); margin-top: 28px; }
+  .wb-product__more summary {
+    padding: 16px 0;
+    cursor: pointer;
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .wb-product__more div { padding-bottom: 18px; font-size: 0.75rem; line-height: 1.7; }
+
+  @media (max-width: 899px) {
+    .wb-product { grid-template-columns: 1fr; }
+    .wb-product__stage { position: relative; top: 0; min-height: 62svh; }
+    .wb-product__inner { position: static; max-width: none; }
+  }
+</style>
+
+<script>
+  if (!customElements.get('wb-product')) {
+    class WbProduct extends HTMLElement {
+      connectedCallback() {
+        try { this.variants = JSON.parse(this.querySelector('[data-variants]').textContent); } catch (e) { this.variants = []; }
+        this.main = this.querySelector('[data-main]');
+        this.addEventListener('change', (e) => { if (e.target.matches('[data-option]')) this.update(); });
+        this.addEventListener('click', (e) => {
+          const t = e.target.closest('[data-thumb]');
+          if (t) this.show(t.dataset.thumb, t.dataset.imageId);
+        });
+        this.markUnavailable();
+      }
+      selected() {
+        return [...this.querySelectorAll('.wb-product__option')].map((fs) => {
+          const c = fs.querySelector('input:checked');
+          return c ? c.value : null;
+        });
+      }
+      show(src, id) {
+        if (!this.main || !src || this.main.src === src) return;
+        this.main.classList.add('is-fading');
+        setTimeout(() => { this.main.src = src; this.main.classList.remove('is-fading'); }, 180);
+        this.querySelectorAll('[data-thumb]').forEach((t) => t.classList.toggle('is-active', t.dataset.imageId === String(id)));
+      }
+      markUnavailable() {
+        const sel = this.selected();
+        this.querySelectorAll('[data-option]').forEach((input) => {
+          const i = Number(input.dataset.option);
+          const test = sel.slice(); test[i] = input.value;
+          const ok = this.variants.some((v) => v.available && v.options.every((o, k) => k === i ? o === input.value : (test[k] === null || o === test[k])));
+          input.closest('.wb-product__choice').classList.toggle('is-unavailable', !ok);
+        });
+      }
+      update() {
+        const sel = this.selected();
+        sel.forEach((v, i) => { const l = this.querySelector('[data-option-label="' + i + '"]'); if (l) l.textContent = v; });
+        const v = this.variants.find((x) => x.options.every((o, i) => o === sel[i]));
+        const btn = this.querySelector('[data-add]');
+        this.markUnavailable();
+        if (!v) { btn.disabled = true; btn.textContent = 'Unavailable'; return; }
+        this.querySelector('[data-variant-id]').value = v.id;
+        this.querySelector('[data-price]').textContent = v.price;
+        this.querySelector('[data-compare]').textContent = v.compare;
+        btn.disabled = !v.available;
+        btn.textContent = v.available ? {{ section.settings.add_label | json }} : {{ section.settings.sold_out_label | json }};
+        if (v.image) this.show(v.image, v.imageId);
+        const url = new URL(window.location.href);
+        url.searchParams.set('variant', v.id);
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+    customElements.define('wb-product', WbProduct);
+  }
+</script>
+
+{% schema %}
+{
+  "name": "WB Product page",
+  "class": "wb-product-section",
+  "settings": [
+    { "type": "text", "id": "add_label", "label": "Add to bag text", "default": "Add to bag" },
+    { "type": "text", "id": "sold_out_label", "label": "Sold out text", "default": "Sold out" },
+    { "type": "text", "id": "note", "label": "Small note under the button", "default": "Ships from Stockholm, Sweden." },
+    { "type": "text", "id": "shipping_heading", "label": "Info heading", "default": "Shipping & returns" },
+    { "type": "richtext", "id": "shipping_text", "label": "Info text", "default": "<p>Every piece is made in small runs. Pre-order pieces ship when the run is finished. Questions? Email shopworthbecoming@gmail.com.</p>" },
+    { "type": "color", "id": "media_background", "label": "Photo side background", "default": "#1C1C1C" },
+    { "type": "color", "id": "panel_background", "label": "Info side background", "default": "#F2EEE6" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#1C1C1C" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B3161B" }
+  ],
+  "presets": [{ "name": "WB Product page" }]
+}
+{% endschema %}
