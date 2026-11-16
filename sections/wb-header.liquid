@@ -1,0 +1,106 @@
+{%- comment -%} Worth Becoming – minimal header: menu left, logo centre, cart right. {%- endcomment -%}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+{%- assign menu = linklists[section.settings.menu] -%}
+
+<header class="wb-header" style="--wb-h-bg: {{ section.settings.background }}; --wb-h-fg: {{ section.settings.text_color }};">
+  <nav class="wb-header__nav" aria-label="Main">
+    <details class="wb-header__mobile">
+      <summary>Menu</summary>
+      <ul role="list">
+        {%- for link in menu.links -%}
+          <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </details>
+    <ul class="wb-header__links" role="list">
+      {%- for link in menu.links -%}
+        <li><a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title }}</a></li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+
+  <a class="wb-header__logo" href="{{ routes.root_url }}">
+    {%- if section.settings.logo != blank -%}
+      <img src="{{ section.settings.logo | image_url: width: 400 }}" alt="{{ shop.name | escape }}" height="{{ section.settings.logo_height }}" style="height: {{ section.settings.logo_height }}px; width: auto;">
+    {%- else -%}
+      <img src="{{ 'wb-logo-black.png' | asset_url }}" alt="{{ shop.name | escape }}" style="height: {{ section.settings.logo_height }}px; width: auto;">
+    {%- endif -%}
+  </a>
+
+  <div class="wb-header__right">
+    {%- if section.settings.instagram != blank -%}
+      <a class="wb-header__hide-sm" href="{{ section.settings.instagram }}" target="_blank" rel="noopener">Instagram</a>
+    {%- endif -%}
+    {%- if shop.customer_accounts_enabled -%}
+      <a class="wb-header__hide-sm" href="{{ routes.account_url }}">Account</a>
+    {%- endif -%}
+    <a href="{{ routes.cart_url }}">Bag (<span>{{ cart.item_count }}</span>)</a>
+  </div>
+</header>
+
+<style>
+  :root {
+    --wb-header-h: 64px;
+    --font-body--family: 'IBM Plex Mono', ui-monospace, monospace;
+    --font-heading--family: 'Bebas Neue', Impact, sans-serif;
+  }
+  .wb-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    height: var(--wb-header-h);
+    padding: 0 clamp(16px, 3vw, 36px);
+    background: var(--wb-h-bg);
+    color: var(--wb-h-fg);
+    border-bottom: 1px solid rgb(0 0 0 / 0.1);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .wb-header a { color: inherit; text-decoration: none; }
+  .wb-header a:hover, .wb-header a[aria-current] { text-decoration: underline; text-underline-offset: 4px; }
+  .wb-header__links, .wb-header__mobile ul { display: flex; gap: 26px; margin: 0; padding: 0; list-style: none; }
+  .wb-header__logo { display: flex; justify-content: center; }
+  .wb-header__logo img { display: block; max-width: 46vw; object-fit: contain; }
+  .wb-header__right { display: flex; justify-content: flex-end; gap: 22px; }
+  .wb-header__mobile { display: none; position: relative; }
+  .wb-header__mobile summary { cursor: pointer; list-style: none; }
+  .wb-header__mobile summary::-webkit-details-marker { display: none; }
+  .wb-header__mobile ul {
+    position: absolute;
+    top: calc(100% + 20px);
+    left: -16px;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 200px;
+    padding: 20px 16px;
+    background: var(--wb-h-bg);
+    border: 1px solid rgb(0 0 0 / 0.12);
+  }
+  @media (max-width: 749px) {
+    .wb-header__links, .wb-header__hide-sm { display: none; }
+    .wb-header__mobile { display: block; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "WB Header",
+  "class": "wb-header-section",
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "image_picker", "id": "logo", "label": "Logo", "info": "Leave empty to use the black Worth Becoming logo." },
+    { "type": "range", "id": "logo_height", "label": "Logo height", "min": 16, "max": 56, "step": 2, "unit": "px", "default": 30 },
+    { "type": "text", "id": "instagram", "label": "Instagram link", "default": "https://www.instagram.com/worthbecomingswe" },
+    { "type": "color", "id": "background", "label": "Background", "default": "#E6E0D4" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#1C1C1C" }
+  ]
+}
+{% endschema %}
