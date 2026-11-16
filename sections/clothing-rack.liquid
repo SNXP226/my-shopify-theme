@@ -19,13 +19,20 @@
   endfor
 -%}
 
+{%- if section.settings.use_brand_fonts -%}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+{%- endif -%}
+
 <clothing-rack
-  class="clothing-rack{% if section.settings.blend_backgrounds %} clothing-rack--blend{% endif %}"
+  class="clothing-rack{% if section.settings.use_brand_fonts %} clothing-rack--brand-fonts{% endif %}{% if section.settings.blend_backgrounds %} clothing-rack--blend{% endif %}"
   style="
     --rack-bg: {{ section.settings.background_color }};
     --rack-fg: {{ section.settings.text_color }};
     --rack-ticker-bg: {{ section.settings.ticker_background }};
     --rack-ticker-fg: {{ section.settings.ticker_text_color }};
+    --rack-accent: {{ section.settings.accent_color }};
     --rack-height: {{ section.settings.section_height }}svh;
     --rack-garment-h: {{ section.settings.garment_height }}px;
   "
@@ -174,9 +181,19 @@
       <div class="clothing-rack__ticker-track" aria-hidden="true">
         {%- for i in (1..2) -%}
           <div class="clothing-rack__ticker-group">
-            {%- for j in (1..8) -%}
-              <span>{{ section.settings.ticker_text }}</span>
-              <span class="clothing-rack__ticker-sep">{{ section.settings.ticker_separator }}</span>
+            {%- for j in (1..4) -%}
+              {%- if section.settings.ticker_separator != blank -%}
+                {%- assign ticker_parts = section.settings.ticker_text | split: section.settings.ticker_separator -%}
+                {%- for part in ticker_parts -%}
+                  {%- assign part_text = part | strip -%}
+                  {%- if part_text != blank -%}
+                    <span>{{ part_text }}</span>
+                    <span class="clothing-rack__ticker-sep">{{ section.settings.ticker_separator }}</span>
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- else -%}
+                <span>{{ section.settings.ticker_text }}</span>
+              {%- endif -%}
             {%- endfor -%}
           </div>
         {%- endfor -%}
@@ -594,7 +611,7 @@
     box-sizing: border-box;
     padding: 9px 20px;
     border: 1px solid var(--rack-fg);
-    border-radius: 999px;
+    border-radius: 0;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -702,6 +719,64 @@
     .clothing-rack__hero-img {
       max-width: 78vw;
     }
+  }
+
+  /* ---------- Brand fonts ---------- */
+  .clothing-rack--brand-fonts {
+    --rack-font-display: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+    --rack-font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    font-family: var(--rack-font-mono);
+  }
+
+  .clothing-rack--brand-fonts .clothing-rack__heading,
+  .clothing-rack--brand-fonts .clothing-rack__title,
+  .clothing-rack--brand-fonts .clothing-rack__label,
+  .clothing-rack--brand-fonts .clothing-rack__ticker-group span {
+    font-family: var(--rack-font-display);
+    font-weight: 400;
+  }
+
+  .clothing-rack--brand-fonts .clothing-rack__title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .clothing-rack--brand-fonts .clothing-rack__label {
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+  }
+
+  .clothing-rack--brand-fonts .clothing-rack__heading {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    letter-spacing: 0.08em;
+  }
+
+  .clothing-rack--brand-fonts .clothing-rack__ticker-group span {
+    font-size: 1.05rem;
+    letter-spacing: 0.12em;
+  }
+
+  .clothing-rack--brand-fonts .clothing-rack__btn,
+  .clothing-rack--brand-fonts .clothing-rack__close,
+  .clothing-rack--brand-fonts .clothing-rack__hint,
+  .clothing-rack--brand-fonts .clothing-rack__price {
+    font-family: var(--rack-font-mono);
+  }
+
+  .clothing-rack__ticker-sep {
+    color: var(--rack-accent);
+  }
+
+  .clothing-rack__btn--solid:hover,
+  .clothing-rack__btn--solid:focus-visible {
+    background: var(--rack-accent);
+    border-color: var(--rack-accent);
+    color: var(--rack-bg);
+  }
+
+  .clothing-rack__soldout {
+    color: var(--rack-accent);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -975,7 +1050,7 @@
       "type": "text",
       "id": "ticker_text",
       "label": "Scrolling text",
-      "default": "Worth Becoming"
+      "default": "Relentless ✦ Undeterred ✦ Earned ✦ No future? Build one."
     },
     {
       "type": "text",
@@ -991,25 +1066,39 @@
       "type": "color",
       "id": "background_color",
       "label": "Background",
-      "default": "#EDEDEB"
+      "default": "#E6DFD1"
     },
     {
       "type": "color",
       "id": "text_color",
       "label": "Text",
-      "default": "#111111"
+      "default": "#1F1E1C"
     },
     {
       "type": "color",
       "id": "ticker_background",
       "label": "Scrolling bar background",
-      "default": "#39FF14"
+      "default": "#1F1E1C"
     },
     {
       "type": "color",
       "id": "ticker_text_color",
       "label": "Scrolling bar text",
-      "default": "#000000"
+      "default": "#E6DFD1"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent (red)",
+      "info": "Used for the ✦ in the scrolling bar, button hover and sold out text.",
+      "default": "#C8102E"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_brand_fonts",
+      "label": "Use brand fonts",
+      "info": "Bebas Neue for headings and IBM Plex Mono for text.",
+      "default": true
     }
   ],
   "presets": [
