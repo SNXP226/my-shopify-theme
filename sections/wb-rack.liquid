@@ -325,7 +325,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: calc(var(--hanger-w) * 0.17);
+    top: calc(var(--hanger-w) * 0.2);
     z-index: 1;
     height: var(--wb-garment-h);
     pointer-events: none;
@@ -497,7 +497,7 @@
   }
 
   .wb-rack__fit--piece {
-    top: calc(4px + var(--piece-hanger) * 0.17);
+    top: calc(4px + var(--piece-hanger) * 0.2);
     bottom: 0;
     height: auto;
   }
@@ -797,11 +797,11 @@
           const bb = await this.bounds(img.currentSrc || img.src);
           const size = this.place(box, img, bb);
           if (!size) return;
-          const hw = Math.min(size.cw * 0.62, box.clientWidth * 0.95);
+          const hw = Math.min(size.cw * 0.5, box.clientWidth * 0.95);
           const top = 2 - hw * 0.012;
           hanger.style.width = hw + 'px';
           hanger.style.top = top + 'px';
-          box.style.top = top + hw * 0.17 + 'px';
+          box.style.top = top + hw * 0.2 + 'px';
         });
       }
 
@@ -817,7 +817,7 @@
           piece.style.setProperty('--piece-hanger', hw + 'px');
           const size = this.place(fit, img, bb);
           if (!size) return;
-          hw = Math.min(size.cw * 0.62, piece.clientWidth * 0.9);
+          hw = Math.min(size.cw * 0.5, piece.clientWidth * 0.9);
         }
         piece.style.setProperty('--piece-hanger', hw + 'px');
         this.place(fit, img, bb);
