@@ -118,16 +118,17 @@
   .wb-product__stage {
     position: sticky;
     top: var(--wb-header-h, 64px);
-    flex: 1;
     display: grid;
     place-items: center;
-    min-height: min(80svh, 860px);
+    height: calc(100svh - var(--wb-header-h, 64px));
+    min-height: 480px;
+    box-sizing: border-box;
     padding: 64px clamp(16px, 4vw, 64px) 24px;
   }
   .wb-product__main {
     width: min(100%, 680px);
     height: auto;
-    max-height: calc(100svh - var(--wb-header-h, 64px) - 160px);
+    max-height: 100%;
     object-fit: contain;
     filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.5));
     transition: opacity 0.25s;
@@ -246,7 +247,7 @@
 
   @media (max-width: 899px) {
     .wb-product { grid-template-columns: 1fr; }
-    .wb-product__stage { position: relative; top: 0; min-height: 62svh; }
+    .wb-product__stage { position: relative; top: 0; height: 62svh; min-height: 360px; }
     .wb-product__inner { position: static; max-width: none; }
   }
 </style>
