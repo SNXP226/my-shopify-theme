@@ -48,7 +48,7 @@
               <li class="wb-rack__item" style="--i: {{ item_index }};">
                 <button type="button" class="wb-rack__garment" data-index="{{ item_index }}" aria-label="{{ product.title | escape }}">
                   {%- render 'wb-hanger', class: 'wb-rack__hanger' -%}
-                  <img
+                  <span class="wb-rack__fit" data-fit><img
                     class="wb-rack__img"
                     src="{{ product.featured_image | image_url: width: 700 }}"
                     alt=""
@@ -56,7 +56,7 @@
                     height="{{ product.featured_image.height }}"
                     loading="{% if forloop.index <= 8 %}eager{% else %}lazy{% endif %}"
                   >
-                  <span class="wb-rack__label">{{ product.title }}</span>
+                  </span><span class="wb-rack__label">{{ product.title }}</span>
                 </button>
               </li>
               {%- assign item_index = item_index | plus: 1 -%}
@@ -67,7 +67,7 @@
               <li class="wb-rack__item">
                 <span class="wb-rack__garment wb-rack__garment--empty">
                   {%- render 'wb-hanger', class: 'wb-rack__hanger' -%}
-                  {{ 'apparel-1' | placeholder_svg_tag: 'wb-rack__img wb-rack__img--placeholder' }}
+                  <span class="wb-rack__fit">{{ 'apparel-1' | placeholder_svg_tag: 'wb-rack__img wb-rack__img--placeholder' }}</span>
                 </span>
               </li>
             {%- endfor -%}
@@ -95,7 +95,7 @@
           <img class="wb-rack__ghost wb-rack__ghost--prev" alt="" data-ghost-prev>
           <div class="wb-rack__piece" data-piece>
             {%- render 'wb-hanger', class: 'wb-rack__piece-hanger' -%}
-            <img class="wb-rack__piece-img" alt="" data-piece-img>
+            <span class="wb-rack__fit wb-rack__fit--piece" data-piece-fit><img class="wb-rack__piece-img" alt="" data-piece-img></span>
             <div class="wb-rack__tags" data-tags></div>
           </div>
           <img class="wb-rack__ghost wb-rack__ghost--next" alt="" data-ghost-next>
@@ -223,7 +223,7 @@
   }
 
   .wb-rack__heading {
-    margin: 0 0 44px;
+    margin: 0 0 20px;
     font-size: 0.7rem;
     letter-spacing: 0.3em;
     text-transform: uppercase;
@@ -246,13 +246,13 @@
     width: max-content;
     min-width: min(100%, 1000px);
     margin: 0 auto;
-    padding: 0 32px;
+    padding: 24px 32px 40px;
     box-sizing: border-box;
   }
 
   .wb-rack__rail {
     position: absolute;
-    top: -5px;
+    top: 18px;
     left: 24px;
     right: 24px;
     display: flex;
@@ -301,34 +301,52 @@
     position: relative;
     display: block;
     width: 100%;
-    padding-top: 0;
+    height: calc(var(--wb-garment-h) * 1.12 + 24px);
     cursor: pointer;
-    transform-origin: 50% 8px;
+    transform-origin: 50% 2px;
     transition: transform 0.5s var(--ease), opacity 0.4s, filter 0.4s;
     -webkit-tap-highlight-color: transparent;
   }
   .wb-rack__garment--empty { cursor: default; opacity: 0.4; }
 
+  /* The hanger sits behind the garment: only the hook and neck show above the collar */
   .wb-rack__hanger {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 0;
     display: block;
     width: var(--hanger-w);
-    margin: 0 auto;
     overflow: visible;
-    position: relative;
-    z-index: 1;
+    transform: translateX(-50%);
   }
 
-  .wb-rack__img {
-    display: block;
-    width: 100%;
+  .wb-rack__fit {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--hanger-w) * 0.17);
+    z-index: 1;
     height: var(--wb-garment-h);
-    margin-top: calc(var(--hanger-w) * -0.14);
+    pointer-events: none;
+  }
+  /* Before the photo is measured it just fits the box; afterwards the script sizes it so the
+     garment itself (not the empty part of the PNG) fills the box and touches the hanger. */
+  .wb-rack__img,
+  .wb-rack__piece-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
     object-fit: contain;
     object-position: top center;
-    filter: drop-shadow(10px 18px 14px rgb(0 0 0 / 0.18));
-    pointer-events: none;
     user-select: none;
   }
+  .wb-rack__img { filter: drop-shadow(10px 18px 14px rgb(0 0 0 / 0.18)); }
+  .wb-rack__img.is-fitted,
+  .wb-rack__piece-img.is-fitted { object-fit: fill; }
   .wb-rack__img--placeholder { fill: rgb(0 0 0 / 0.25); }
 
   .wb-rack__label {
@@ -365,7 +383,7 @@
   .wb-rack__garment:focus-visible .wb-rack__label { opacity: 0.8; }
 
   .wb-rack__hint {
-    margin: 52px 0 0;
+    margin: 12px 0 0;
     font-size: 0.65rem;
     letter-spacing: 0.24em;
     text-transform: uppercase;
@@ -470,24 +488,21 @@
 
   .wb-rack__piece-hanger {
     position: absolute;
-    top: 0;
+    top: 4px;
     left: 50%;
     width: var(--piece-hanger);
     transform: translateX(-50%);
-    z-index: 1;
+    z-index: 0;
     overflow: visible;
   }
 
-  .wb-rack__piece-img {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: calc(var(--piece-hanger) * 0.14);
+  .wb-rack__fit--piece {
+    top: calc(4px + var(--piece-hanger) * 0.17);
     bottom: 0;
-    width: 100%;
-    height: calc(100% - var(--piece-hanger) * 0.14);
-    object-fit: contain;
-    object-position: top center;
+    height: auto;
+  }
+
+  .wb-rack__piece-img {
     filter: drop-shadow(16px 26px 22px rgb(0 0 0 / 0.22));
     transition: opacity 0.25s;
   }
@@ -496,7 +511,7 @@
   /* Tags hang from the hanger hook on strings */
   .wb-rack__tags {
     position: absolute;
-    top: calc(var(--piece-hanger) * 0.33);
+    top: calc(4px + var(--piece-hanger) * 0.33);
     left: calc(50% + var(--piece-hanger) * 0.42);
     display: flex;
     gap: 6px;
@@ -668,9 +683,15 @@
         if (!this.products.length) return;
 
         this.index = 0;
+        this.fitRack();
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(() => { this.fitRack(); if (this.classList.contains('is-focused')) this.fitPiece(); }, 150);
+        });
         const q = (s) => this.querySelector(s);
         this.els = {
-          piece: q('[data-piece]'), img: q('[data-piece-img]'), tags: q('[data-tags]'),
+          piece: q('[data-piece]'), img: q('[data-piece-img]'), fit: q('[data-piece-fit]'), hanger: q('.wb-rack__piece-hanger'), tags: q('[data-tags]'),
           title: q('[data-title]'), price: q('[data-price]'), badge: q('[data-badge]'), link: q('[data-link]'),
           ghostPrev: q('[data-ghost-prev]'), ghostNext: q('[data-ghost-next]'),
         };
@@ -708,6 +729,99 @@
       }
 
       wrap(i) { const n = this.products.length; return ((i % n) + n) % n; }
+
+      /* Find where the garment really is inside the photo (skips transparent edges). */
+      bounds(src) {
+        this.boundsCache = this.boundsCache || new Map();
+        const key = String(src).replace(/([?&])width=[0-9]+&?/, '$1');
+        if (this.boundsCache.has(key)) return this.boundsCache.get(key);
+        const full = { l: 0, t: 0, r: 1, b: 1 };
+        const job = new Promise((resolve) => {
+          const im = new Image();
+          im.crossOrigin = 'anonymous';
+          im.onload = () => {
+            try {
+              const k = 240 / Math.max(im.naturalWidth, im.naturalHeight);
+              const w = Math.max(1, Math.round(im.naturalWidth * k));
+              const h = Math.max(1, Math.round(im.naturalHeight * k));
+              const c = document.createElement('canvas');
+              c.width = w; c.height = h;
+              const ctx = c.getContext('2d');
+              ctx.drawImage(im, 0, 0, w, h);
+              const d = ctx.getImageData(0, 0, w, h).data;
+              let t = h, b = -1, l = w, r = -1;
+              for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                  if (d[(y * w + x) * 4 + 3] > 24) {
+                    if (y < t) t = y; if (y > b) b = y; if (x < l) l = x; if (x > r) r = x;
+                  }
+                }
+              }
+              resolve(b < 0 ? full : { l: l / w, t: t / h, r: (r + 1) / w, b: (b + 1) / h });
+            } catch (e) { resolve(full); }
+          };
+          im.onerror = () => resolve(full);
+          im.src = src;
+        });
+        this.boundsCache.set(key, job);
+        return job;
+      }
+
+      loaded(img) {
+        if (img.complete && img.naturalWidth) return Promise.resolve();
+        return new Promise((r) => { img.addEventListener('load', r, { once: true }); img.addEventListener('error', r, { once: true }); });
+      }
+
+      /* Size the photo so the garment fills the box, centred, with its collar at the top edge. */
+      place(box, img, bb) {
+        const W = box.clientWidth, H = box.clientHeight;
+        const nw = img.naturalWidth, nh = img.naturalHeight;
+        if (!W || !H || !nw || !nh) return null;
+        const cw = (bb.r - bb.l) * nw, ch = (bb.b - bb.t) * nh;
+        const s = Math.min(W / cw, H / ch);
+        img.style.width = nw * s + 'px';
+        img.style.height = nh * s + 'px';
+        img.style.left = W / 2 - (bb.l + (bb.r - bb.l) / 2) * nw * s + 'px';
+        img.style.top = -bb.t * nh * s + 'px';
+        img.classList.add('is-fitted');
+        return { cw: cw * s, ch: ch * s };
+      }
+
+      fitRack() {
+        this.querySelectorAll('.wb-rack__garment[data-index]').forEach(async (g) => {
+          const box = g.querySelector('[data-fit]');
+          const img = box && box.querySelector('img');
+          const hanger = g.querySelector('.wb-rack__hanger');
+          if (!img || !hanger) return;
+          await this.loaded(img);
+          const bb = await this.bounds(img.currentSrc || img.src);
+          const size = this.place(box, img, bb);
+          if (!size) return;
+          const hw = Math.min(size.cw * 0.62, box.clientWidth * 0.95);
+          const top = 2 - hw * 0.012;
+          hanger.style.width = hw + 'px';
+          hanger.style.top = top + 'px';
+          box.style.top = top + hw * 0.17 + 'px';
+        });
+      }
+
+      async fitPiece() {
+        const { piece, fit, img, hanger } = this.els;
+        if (!fit || !img) return;
+        const token = (this.fitToken = (this.fitToken || 0) + 1);
+        await this.loaded(img);
+        const bb = await this.bounds(img.currentSrc || img.src);
+        if (token !== this.fitToken) return;
+        let hw = piece.clientWidth * 0.5;
+        for (let pass = 0; pass < 2; pass++) {
+          piece.style.setProperty('--piece-hanger', hw + 'px');
+          const size = this.place(fit, img, bb);
+          if (!size) return;
+          hw = Math.min(size.cw * 0.62, piece.clientWidth * 0.9);
+        }
+        piece.style.setProperty('--piece-hanger', hw + 'px');
+        this.place(fit, img, bb);
+      }
 
       colorFor(c) {
         if (c.swatch) return c.swatch;
@@ -758,8 +872,11 @@
         const p = this.products[this.index];
         const n = this.products.length;
         this.color = -1;
+        this.els.img.classList.remove('is-fitted');
+        this.els.img.removeAttribute('style');
         this.els.img.src = p.image;
         this.els.img.alt = p.title;
+        this.fitPiece();
         this.els.title.textContent = p.title;
         this.els.price.textContent = p.price;
         this.els.badge.textContent = p.badge || '';
@@ -788,6 +905,7 @@
         setTimeout(() => {
           this.els.img.src = c.image;
           this.els.img.classList.remove('is-fading');
+          this.fitPiece();
         }, 200);
       }
 
@@ -797,6 +915,7 @@
         this.focusEl.hidden = false;
         this.classList.add('is-focused');
         requestAnimationFrame(() => requestAnimationFrame(() => {
+          this.fitPiece();
           this.classList.add('is-open');
           this.querySelector('[data-close]').focus({ preventScroll: true });
         }));
