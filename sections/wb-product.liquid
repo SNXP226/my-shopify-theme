@@ -55,6 +55,9 @@
         <button type="submit" name="add" class="wb-product__add" data-add{% unless current.available %} disabled{% endunless %}>
           {%- if current.available -%}{{ section.settings.add_label }}{%- else -%}{{ section.settings.sold_out_label }}{%- endif -%}
         </button>
+        {%- if section.settings.show_dynamic_checkout -%}
+          <div class="wb-product__express">{{ form | payment_button }}</div>
+        {%- endif -%}
         {%- if section.settings.note != blank -%}
           <p class="wb-product__note">{{ section.settings.note }}</p>
         {%- endif -%}
@@ -122,7 +125,8 @@
     padding: 64px clamp(16px, 4vw, 64px) 24px;
   }
   .wb-product__main {
-    width: 100%;
+    width: min(100%, 680px);
+    height: auto;
     max-height: calc(100svh - var(--wb-header-h, 64px) - 160px);
     object-fit: contain;
     filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.5));
@@ -184,11 +188,13 @@
   }
   .wb-product__option legend span { margin-left: 6px; opacity: 1; font-weight: 600; }
   .wb-product__choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
-  .wb-product__choice { position: relative; cursor: pointer; }
+  .wb-product__choice { position: relative; display: block; cursor: pointer; }
   .wb-product__choice input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
   .wb-product__choice span {
     display: grid;
     place-items: center;
+    width: 100%;
+    box-sizing: border-box;
     min-height: 44px;
     padding: 0 10px;
     border: 1px solid rgb(0 0 0 / 0.22);
@@ -217,6 +223,8 @@
   }
   .wb-product__add:hover:not([disabled]) { background: var(--wb-p-accent); color: #fff; }
   .wb-product__add[disabled] { opacity: 0.45; cursor: not-allowed; }
+  .wb-product__express { margin-top: 8px; }
+  .wb-product__express .shopify-payment-button__button { border-radius: 0; min-height: 52px; }
   .wb-product__note { margin: 12px 0 0; font-size: 0.65rem; letter-spacing: 0.08em; opacity: 0.6; }
   .wb-product__desc {
     margin-top: 36px;
@@ -306,6 +314,7 @@
   "settings": [
     { "type": "text", "id": "add_label", "label": "Add to bag text", "default": "Add to bag" },
     { "type": "text", "id": "sold_out_label", "label": "Sold out text", "default": "Sold out" },
+    { "type": "checkbox", "id": "show_dynamic_checkout", "label": "Show quick checkout button (Shop Pay etc.)", "default": true },
     { "type": "text", "id": "note", "label": "Small note under the button", "default": "Ships from Stockholm, Sweden." },
     { "type": "text", "id": "shipping_heading", "label": "Info heading", "default": "Shipping & returns" },
     { "type": "richtext", "id": "shipping_text", "label": "Info text", "default": "<p>Every piece is made in small runs. Pre-order pieces ship when the run is finished. Questions? Email shopworthbecoming@gmail.com.</p>" },
