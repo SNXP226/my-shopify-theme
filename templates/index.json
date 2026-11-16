@@ -287,10 +287,15 @@
         "padding-block-end": 48
       },
       "disabled": true
+    },
+    "drop_countdown": {
+      "type": "drop-countdown",
+      "settings": {}
     }
   },
   "order": [
     "clothing_rack",
+    "drop_countdown",
     "hero_jVaWmY",
     "product_list_fa6P9H"
   ]

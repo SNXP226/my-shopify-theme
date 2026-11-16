@@ -1,0 +1,23 @@
+{%- comment -%}
+  Shared gradients for the clothing rack hanger. Rendered once per section.
+  Colors come from CSS variables set by the "Hanger style" setting.
+{%- endcomment -%}
+<svg class="clothing-rack__defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="rack-chrome-{{ uid }}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5c5c5c"/>
+      <stop offset="0.28" stop-color="#f5f5f5"/>
+      <stop offset="0.5" stop-color="#9a9a9a"/>
+      <stop offset="0.75" stop-color="#e4e4e4"/>
+      <stop offset="1" stop-color="#4a4a4a"/>
+    </linearGradient>
+    <linearGradient id="rack-body-{{ uid }}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" style="stop-color: var(--hanger-light)"/>
+      <stop offset="0.45" style="stop-color: var(--hanger-mid)"/>
+      <stop offset="1" style="stop-color: var(--hanger-dark)"/>
+    </linearGradient>
+    <filter id="rack-blur-{{ uid }}" x="-10%" y="-100%" width="120%" height="300%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+  </defs>
+</svg>

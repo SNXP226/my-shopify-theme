@@ -26,7 +26,7 @@
 {%- endif -%}
 
 <clothing-rack
-  class="clothing-rack{% if section.settings.use_brand_fonts %} clothing-rack--brand-fonts{% endif %}{% if section.settings.blend_backgrounds %} clothing-rack--blend{% endif %}"
+  class="clothing-rack clothing-rack--hanger-{{ section.settings.hanger_style }}{% if section.settings.use_brand_fonts %} clothing-rack--brand-fonts{% endif %}{% if section.settings.blend_backgrounds %} clothing-rack--blend{% endif %}"
   style="
     --rack-bg: {{ section.settings.background_color }};
     --rack-fg: {{ section.settings.text_color }};
@@ -38,6 +38,7 @@
   "
   data-section-id="{{ section.id }}"
 >
+  {% render 'clothing-rack-defs', uid: section.id %}
   <div class="clothing-rack__stage">
     {%- if section.settings.heading != blank -%}
       <h2 class="clothing-rack__heading">{{ section.settings.heading }}</h2>
@@ -45,10 +46,11 @@
 
     <div class="clothing-rack__rail-wrap">
       <div class="clothing-rack__scroller">
+        <div class="clothing-rack__track">
         <div class="clothing-rack__rail" aria-hidden="true">
-          <span class="clothing-rack__rail-cap clothing-rack__rail-cap--left"></span>
+          <span class="clothing-rack__bracket clothing-rack__bracket--left"></span>
           <span class="clothing-rack__rail-bar"></span>
-          <span class="clothing-rack__rail-cap clothing-rack__rail-cap--right"></span>
+          <span class="clothing-rack__bracket clothing-rack__bracket--right"></span>
         </div>
 
         <ul class="clothing-rack__items" role="list">
@@ -63,10 +65,9 @@
                     data-index="{{ item_index }}"
                     aria-label="{{ product.title | escape }}"
                   >
-                    <span class="clothing-rack__turn">
-                      {% render 'clothing-rack-hanger' %}
-                      <img
-                        class="clothing-rack__img"
+                    <span class="clothing-rack__shadow clothing-rack__turn" aria-hidden="true"></span>
+                    <img
+                        class="clothing-rack__img clothing-rack__turn"
                         src="{{ product.featured_image | image_url: width: 600 }}"
                         srcset="{{ product.featured_image | image_url: width: 300 }} 300w, {{ product.featured_image | image_url: width: 600 }} 600w"
                         sizes="260px"
@@ -75,6 +76,8 @@
                         width="{{ product.featured_image.width }}"
                         height="{{ product.featured_image.height }}"
                       >
+                    <span class="clothing-rack__hanger-wrap clothing-rack__turn">
+                      {%- render 'clothing-rack-hanger', uid: section.id -%}
                     </span>
                     <span class="clothing-rack__label">{{ product.title }}</span>
                   </button>
@@ -86,16 +89,17 @@
             {%- for i in (1..6) -%}
               <li class="clothing-rack__item">
                 <span class="clothing-rack__garment clothing-rack__garment--placeholder">
-                  <span class="clothing-rack__turn">
-                    {% render 'clothing-rack-hanger' %}
-                    {%- capture placeholder_name -%}apparel-{{ forloop.index | modulo: 8 | plus: 1 }}{%- endcapture -%}
-                    {{ placeholder_name | placeholder_svg_tag: 'clothing-rack__img clothing-rack__img--placeholder' }}
+                  {%- capture placeholder_name -%}apparel-{{ forloop.index | modulo: 8 | plus: 1 }}{%- endcapture -%}
+                  {{ placeholder_name | placeholder_svg_tag: 'clothing-rack__img clothing-rack__img--placeholder clothing-rack__turn' }}
+                  <span class="clothing-rack__hanger-wrap clothing-rack__turn">
+                    {%- render 'clothing-rack-hanger', uid: section.id -%}
                   </span>
                 </span>
               </li>
             {%- endfor -%}
           {%- endif -%}
         </ul>
+        </div>
       </div>
     </div>
 
@@ -119,8 +123,9 @@
         <div class="clothing-rack__focus-stage">
           <img class="clothing-rack__ghost clothing-rack__ghost--prev" alt="" data-rack-ghost-prev>
           <figure class="clothing-rack__hero" data-rack-hero>
-            {% render 'clothing-rack-hanger' %}
+            <span class="clothing-rack__hero-shadow" aria-hidden="true"></span>
             <img class="clothing-rack__hero-img" alt="" data-rack-hero-img>
+            {%- render 'clothing-rack-hanger', uid: section.id -%}
           </figure>
           <img class="clothing-rack__ghost clothing-rack__ghost--next" alt="" data-rack-ghost-next>
         </div>
@@ -210,10 +215,40 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    --hanger-w: calc(var(--rack-open) * 0.68);
     min-height: var(--rack-height);
-    background: var(--rack-bg);
+    background-color: var(--rack-bg);
+    background-image:
+      radial-gradient(60% 55% at 50% 18%, rgb(255 255 255 / 0.55) 0%, rgb(255 255 255 / 0) 70%),
+      radial-gradient(140% 100% at 50% 40%, rgb(0 0 0 / 0) 55%, rgb(0 0 0 / 0.14) 100%);
     color: var(--rack-fg);
     overflow: hidden;
+  }
+
+  .clothing-rack__defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
+  /* Hanger colors */
+  .clothing-rack--hanger-black {
+    --hanger-light: #57534e;
+    --hanger-mid: #2a2826;
+    --hanger-dark: #0d0c0b;
+  }
+
+  .clothing-rack--hanger-wood {
+    --hanger-light: #e2b47c;
+    --hanger-mid: #a86d38;
+    --hanger-dark: #5e3a1b;
+  }
+
+  .clothing-rack--hanger-chrome {
+    --hanger-light: #fbfbfb;
+    --hanger-mid: #a7a7a7;
+    --hanger-dark: #4f4f4f;
   }
 
   .clothing-rack__stage {
@@ -255,30 +290,84 @@
     display: none;
   }
 
+  .clothing-rack__track {
+    position: relative;
+    width: max-content;
+    margin: 0 auto;
+  }
+
   .clothing-rack__rail {
+    z-index: 0;
     position: absolute;
-    top: 14px;
-    left: 24px;
-    right: 24px;
+    top: calc(var(--hanger-w) * 0.05 - 4px);
+    left: 20px;
+    right: 20px;
     display: flex;
     align-items: center;
     height: 8px;
     pointer-events: none;
   }
 
-  .clothing-rack__rail-bar {
-    flex: 1;
-    height: 5px;
-    border-radius: 3px;
-    background: linear-gradient(180deg, #e9e9e9 0%, #b4b4b4 45%, #8a8a8a 100%);
-    box-shadow: 0 2px 3px rgb(0 0 0 / 0.15);
+  /* wall shadow cast by the rail */
+  .clothing-rack__rail::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 14px;
+    z-index: -1;
+    height: 6px;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.22);
+    filter: blur(5px);
   }
 
-  .clothing-rack__rail-cap {
-    width: 6px;
-    height: 16px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, #d8d8d8, #9a9a9a);
+  .clothing-rack__rail-bar {
+    position: relative;
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(
+      180deg,
+      #fdfdfd 0%,
+      #d9d9d9 22%,
+      #8f8f8f 52%,
+      #bdbdbd 72%,
+      #6a6a6a 100%
+    );
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0.25);
+  }
+
+  .clothing-rack__bracket {
+    position: relative;
+    flex: 0 0 auto;
+    width: 12px;
+    height: 30px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #7a7a7a 0%, #f2f2f2 35%, #b0b0b0 60%, #5e5e5e 100%);
+    box-shadow:
+      3px 6px 8px rgb(0 0 0 / 0.28),
+      inset 0 1px 0 rgb(255 255 255 / 0.6);
+  }
+
+  .clothing-rack__bracket::before,
+  .clothing-rack__bracket::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff, #777 70%);
+  }
+
+  .clothing-rack__bracket::before {
+    top: 4px;
+  }
+
+  .clothing-rack__bracket::after {
+    bottom: 4px;
   }
 
   .clothing-rack__items {
@@ -295,7 +384,7 @@
     position: relative;
     flex: 0 0 auto;
     width: var(--rack-collapsed);
-    height: calc(var(--rack-garment-h) + 70px);
+    height: calc(var(--rack-garment-h) + var(--hanger-w) * 0.26 + 36px);
     transition: width 0.6s var(--rack-ease);
   }
 
@@ -312,43 +401,53 @@
     cursor: default;
   }
 
+  /* Every layer of a garment (shadow, photo, hanger) turns together */
   .clothing-rack__turn {
+    --turn: 72deg;
+    --lift: 0px;
     position: absolute;
-    top: 0;
     left: 50%;
-    width: var(--rack-open);
-    margin-left: calc(var(--rack-open) / -2);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transform: perspective(900px) rotateY(72deg);
-    transition: transform 0.6s var(--rack-ease);
+    display: block;
+    transform: translateX(-50%) translateY(var(--lift)) perspective(900px) rotateY(var(--turn));
+    transition: transform 0.6s var(--rack-ease), opacity 0.6s var(--rack-ease);
     pointer-events: none;
+  }
+
+  .clothing-rack__hanger-wrap {
+    top: 0;
+    width: var(--hanger-w);
   }
 
   .clothing-rack__hanger {
     display: block;
-    width: 46%;
-    max-width: 120px;
+    width: 100%;
     height: auto;
-    color: #3a3a3a;
-    margin-bottom: -6px;
-    position: relative;
-    z-index: 1;
+    overflow: visible;
   }
 
   .clothing-rack__img {
-    display: block;
-    width: 100%;
+    top: calc(var(--hanger-w) * 0.26);
+    width: var(--rack-open);
     height: var(--rack-garment-h);
     object-fit: contain;
     object-position: top center;
-    pointer-events: none;
     user-select: none;
   }
 
-  .clothing-rack--blend .clothing-rack__turn,
-  .clothing-rack--blend .clothing-rack__hero,
+  /* soft shadow the garment casts on the wall */
+  .clothing-rack__shadow {
+    top: calc(var(--hanger-w) * 0.3);
+    width: calc(var(--rack-open) * 0.72);
+    height: calc(var(--rack-garment-h) * 0.86);
+    border-radius: 38% 38% 14% 14% / 16% 16% 10% 10%;
+    background: rgb(0 0 0 / 0.5);
+    filter: blur(18px);
+    opacity: 0.22;
+    transform: translateX(calc(-50% + 8px)) translateY(10px) perspective(900px) rotateY(var(--turn));
+  }
+
+  .clothing-rack--blend .clothing-rack__img,
+  .clothing-rack--blend .clothing-rack__hero-img,
   .clothing-rack--blend .clothing-rack__ghost {
     mix-blend-mode: multiply;
   }
@@ -380,7 +479,13 @@
     }
 
     .clothing-rack__garment:hover .clothing-rack__turn {
-      transform: perspective(900px) rotateY(0deg) translateY(4px);
+      --turn: 0deg;
+      --lift: 4px;
+    }
+
+    .clothing-rack__garment:hover .clothing-rack__shadow {
+      opacity: 0.38;
+      transform: translateX(calc(-50% + 18px)) translateY(22px) perspective(900px) rotateY(0deg);
     }
 
     .clothing-rack__garment:hover .clothing-rack__label {
@@ -394,7 +499,7 @@
   }
 
   .clothing-rack__garment:focus-visible .clothing-rack__turn {
-    transform: perspective(900px) rotateY(0deg);
+    --turn: 0deg;
   }
 
   .clothing-rack__garment:focus-visible .clothing-rack__label {
@@ -510,30 +615,47 @@
   }
 
   .clothing-rack__hero {
+    --hero-hanger-w: min(200px, 42vw);
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     height: 100%;
+    width: min(70vw, 520px);
     margin: 0;
+  }
+
+  .clothing-rack__hero > * {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     transition: opacity 0.35s var(--rack-ease), transform 0.5s var(--rack-ease);
   }
 
   .clothing-rack__hero .clothing-rack__hanger {
-    width: 90px;
+    top: 0;
+    width: var(--hero-hanger-w);
   }
 
   .clothing-rack__hero-img {
-    height: calc(100% - 40px);
-    width: auto;
-    max-width: min(70vw, 520px);
+    top: calc(var(--hero-hanger-w) * 0.26);
+    height: calc(100% - var(--hero-hanger-w) * 0.26);
+    width: 100%;
     object-fit: contain;
     object-position: top center;
   }
 
-  .clothing-rack__hero.is-swapping {
+  .clothing-rack__hero-shadow {
+    top: calc(var(--hero-hanger-w) * 0.34);
+    width: 62%;
+    height: 82%;
+    border-radius: 38% 38% 14% 14% / 16% 16% 10% 10%;
+    background: rgb(0 0 0 / 0.5);
+    filter: blur(26px);
+    opacity: 0.3;
+    transform: translateX(calc(-50% + 22px)) translateY(20px);
+  }
+
+  .clothing-rack__hero.is-swapping > * {
     opacity: 0;
-    transform: translateX(var(--rack-swap-dir, 0)) scale(0.97);
+    transform: translateX(calc(-50% + var(--rack-swap-dir, 0px))) scale(0.97);
   }
 
   .clothing-rack__ghost {
@@ -696,7 +818,7 @@
     }
 
     .clothing-rack__turn {
-      transform: perspective(900px) rotateY(76deg);
+      --turn: 76deg;
     }
 
     .clothing-rack__ghost {
@@ -971,6 +1093,17 @@
       "label": "Hide white photo backgrounds",
       "info": "Blends white backgrounds into the page so the clothes look like they are hanging.",
       "default": true
+    },
+    {
+      "type": "select",
+      "id": "hanger_style",
+      "label": "Hanger style",
+      "options": [
+        { "value": "black", "label": "Matte black" },
+        { "value": "wood", "label": "Wood" },
+        { "value": "chrome", "label": "Chrome" }
+      ],
+      "default": "black"
     },
     {
       "type": "header",

@@ -1,0 +1,545 @@
+{%- comment -%}
+  Drop countdown + waiting list sign-up.
+  Counts down to the drop date, then switches to a "drop is live" button.
+  Sign-ups are saved as Shopify customers with the tags below (Customers > filter by tag).
+{%- endcomment -%}
+
+{%- liquid
+  assign drop_iso = section.settings.drop_date | append: 'T' | append: section.settings.drop_time | append: ':00' | append: section.settings.utc_offset
+  assign form_id = 'DropSignup-' | append: section.id
+-%}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<drop-countdown
+  class="drop-countdown"
+  id="Drop-{{ section.id }}"
+  data-target="{{ drop_iso | escape }}"
+  style="
+    --drop-bg: {{ section.settings.background_color }};
+    --drop-fg: {{ section.settings.text_color }};
+    --drop-accent: {{ section.settings.accent_color }};
+  "
+>
+  <div class="drop-countdown__inner">
+    {%- if section.settings.show_logo -%}
+      <img
+        class="drop-countdown__logo"
+        src="{{ 'wb-logo-bone.png' | asset_url }}"
+        alt="{{ shop.name | escape }}"
+        width="400"
+        height="729"
+        loading="lazy"
+      >
+    {%- endif -%}
+
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="drop-countdown__eyebrow">{{ section.settings.eyebrow }}</p>
+    {%- endif -%}
+    {%- if section.settings.heading != blank -%}
+      <h2 class="drop-countdown__heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+    {%- if section.settings.subheading != blank -%}
+      <p class="drop-countdown__sub">{{ section.settings.subheading }}</p>
+    {%- endif -%}
+
+    <div class="drop-countdown__clock" role="timer" aria-live="off" data-clock>
+      {%- assign units = 'days,hours,minutes,seconds' | split: ',' -%}
+      {%- assign labels = 'Days,Hours,Min,Sec' | split: ',' -%}
+      {%- for unit in units -%}
+        <div class="drop-countdown__unit">
+          <span class="drop-countdown__num" data-{{ unit }}>00</span>
+          <span class="drop-countdown__label">{{ labels[forloop.index0] }}</span>
+        </div>
+        {%- unless forloop.last -%}
+          <span class="drop-countdown__colon" aria-hidden="true">:</span>
+        {%- endunless -%}
+      {%- endfor -%}
+    </div>
+
+    <div class="drop-countdown__live" data-live hidden>
+      <p class="drop-countdown__live-text">{{ section.settings.live_text }}</p>
+      {%- if section.settings.live_link != blank -%}
+        <a class="drop-countdown__btn" href="{{ section.settings.live_link }}">{{ section.settings.live_button }}</a>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.show_signup -%}
+      <div class="drop-countdown__signup" data-signup>
+        {%- form 'customer', id: form_id, class: 'drop-countdown__form' -%}
+          <input type="hidden" name="contact[tags]" value="{{ section.settings.customer_tags | escape }}">
+          {%- if form.posted_successfully? -%}
+            <p class="drop-countdown__success" role="status" tabindex="-1" autofocus>
+              {{ section.settings.success_text }}
+            </p>
+          {%- else -%}
+            <label class="drop-countdown__visually-hidden" for="{{ form_id }}-email">Email</label>
+            <div class="drop-countdown__field">
+              <input
+                id="{{ form_id }}-email"
+                class="drop-countdown__input"
+                type="email"
+                name="contact[email]"
+                placeholder="{{ section.settings.email_placeholder | escape }}"
+                autocomplete="email"
+                autocapitalize="off"
+                spellcheck="false"
+                required
+                {% if form.errors %}aria-invalid="true" aria-describedby="{{ form_id }}-error"{% endif %}
+              >
+              <button type="submit" class="drop-countdown__btn">{{ section.settings.button_label }}</button>
+            </div>
+            {%- if form.errors -%}
+              <p class="drop-countdown__error" id="{{ form_id }}-error" role="alert">
+                {%- if form.errors.messages['email'] -%}
+                  Email {{ form.errors.messages['email'] }}
+                {%- else -%}
+                  Something went wrong. Please check your email and try again.
+                {%- endif -%}
+              </p>
+            {%- endif -%}
+            {%- if section.settings.small_print != blank -%}
+              <p class="drop-countdown__small">{{ section.settings.small_print }}</p>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+    {%- endif -%}
+  </div>
+</drop-countdown>
+
+{% stylesheet %}
+  .drop-countdown {
+    display: block;
+    background-color: var(--drop-bg);
+    background-image: radial-gradient(70% 90% at 50% 0%, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0) 70%);
+    color: var(--drop-fg);
+    font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    padding: clamp(56px, 9vw, 104px) 16px;
+    text-align: center;
+  }
+
+  .drop-countdown__inner {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .drop-countdown__logo {
+    width: auto;
+    height: 64px;
+    margin-bottom: 28px;
+  }
+
+  .drop-countdown__eyebrow {
+    margin: 0 0 10px;
+    color: var(--drop-accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+
+  .drop-countdown__heading {
+    margin: 0;
+    font-family: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+    font-weight: 400;
+    font-size: clamp(2.6rem, 8vw, 4.75rem);
+    line-height: 0.95;
+    letter-spacing: 0.03em;
+    color: inherit;
+  }
+
+  .drop-countdown__sub {
+    margin: 12px 0 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  .drop-countdown__clock {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(6px, 2vw, 18px);
+    margin: clamp(32px, 5vw, 48px) 0;
+  }
+
+  .drop-countdown__clock[hidden] {
+    display: none;
+  }
+
+  .drop-countdown__unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: clamp(58px, 15vw, 104px);
+    padding: 14px 6px 10px;
+    border: 1px solid rgb(255 255 255 / 0.14);
+    background: rgb(255 255 255 / 0.03);
+  }
+
+  .drop-countdown__num {
+    font-family: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+    font-size: clamp(2.4rem, 9vw, 4.5rem);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .drop-countdown__label {
+    margin-top: 6px;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  .drop-countdown__colon {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: clamp(2rem, 7vw, 3.6rem);
+    line-height: 1;
+    padding-top: 14px;
+    color: var(--drop-accent);
+  }
+
+  .drop-countdown__live {
+    margin: 40px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .drop-countdown__live[hidden] {
+    display: none;
+  }
+
+  .drop-countdown__live-text {
+    margin: 0;
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: clamp(2rem, 6vw, 3rem);
+    color: var(--drop-accent);
+    letter-spacing: 0.04em;
+  }
+
+  .drop-countdown__signup {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .drop-countdown__field {
+    display: flex;
+    border: 1px solid var(--drop-fg);
+  }
+
+  .drop-countdown__input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--drop-fg);
+    font: inherit;
+    font-size: 0.85rem;
+  }
+
+  .drop-countdown__input::placeholder {
+    color: var(--drop-fg);
+    opacity: 0.45;
+  }
+
+  .drop-countdown__input:focus {
+    outline: none;
+    background: rgb(255 255 255 / 0.05);
+  }
+
+  .drop-countdown__field:focus-within {
+    outline: 2px solid var(--drop-accent);
+    outline-offset: 2px;
+  }
+
+  .drop-countdown__btn {
+    flex: 0 0 auto;
+    display: inline-block;
+    padding: 14px 22px;
+    border: 0;
+    border-radius: 0;
+    background: var(--drop-fg);
+    color: var(--drop-bg);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .drop-countdown__btn:hover,
+  .drop-countdown__btn:focus-visible {
+    background: var(--drop-accent);
+    color: var(--drop-fg);
+  }
+
+  .drop-countdown__btn:focus-visible {
+    outline: 2px solid var(--drop-fg);
+    outline-offset: 2px;
+  }
+
+  .drop-countdown__small {
+    margin: 12px 0 0;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    opacity: 0.5;
+  }
+
+  .drop-countdown__success {
+    margin: 0;
+    padding: 16px;
+    border: 1px solid var(--drop-accent);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+  }
+
+  .drop-countdown__error {
+    margin: 10px 0 0;
+    color: #ff6b6b;
+    font-size: 0.75rem;
+  }
+
+  .drop-countdown__visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 480px) {
+    .drop-countdown__field {
+      flex-direction: column;
+      border: 0;
+      gap: 8px;
+    }
+
+    .drop-countdown__input {
+      border: 1px solid var(--drop-fg);
+    }
+
+    .drop-countdown__colon {
+      display: none;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  if (!customElements.get('drop-countdown')) {
+    class DropCountdown extends HTMLElement {
+      connectedCallback() {
+        this.target = Date.parse(this.dataset.target);
+        this.clock = this.querySelector('[data-clock]');
+        this.live = this.querySelector('[data-live]');
+        this.parts = {
+          days: this.querySelector('[data-days]'),
+          hours: this.querySelector('[data-hours]'),
+          minutes: this.querySelector('[data-minutes]'),
+          seconds: this.querySelector('[data-seconds]'),
+        };
+        if (Number.isNaN(this.target)) {
+          this.clock.hidden = true;
+          return;
+        }
+        this.tick();
+        this.timer = setInterval(() => this.tick(), 1000);
+      }
+
+      disconnectedCallback() {
+        clearInterval(this.timer);
+      }
+
+      tick() {
+        const diff = this.target - Date.now();
+        if (diff <= 0) {
+          clearInterval(this.timer);
+          this.clock.hidden = true;
+          this.live.hidden = false;
+          this.classList.add('is-live');
+          return;
+        }
+        const s = Math.floor(diff / 1000);
+        const pad = (n) => String(n).padStart(2, '0');
+        this.parts.days.textContent = pad(Math.floor(s / 86400));
+        this.parts.hours.textContent = pad(Math.floor((s % 86400) / 3600));
+        this.parts.minutes.textContent = pad(Math.floor((s % 3600) / 60));
+        this.parts.seconds.textContent = pad(s % 60);
+      }
+    }
+    customElements.define('drop-countdown', DropCountdown);
+  }
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Drop countdown",
+  "tag": "section",
+  "class": "section-drop-countdown",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Drop"
+    },
+    {
+      "type": "text",
+      "id": "drop_date",
+      "label": "Drop date",
+      "info": "Write it as YEAR-MONTH-DAY, for example 2026-11-27",
+      "default": "2026-11-27"
+    },
+    {
+      "type": "text",
+      "id": "drop_time",
+      "label": "Drop time (24-hour clock)",
+      "info": "For example 00:00 for midnight or 18:00 for 6 PM",
+      "default": "00:00"
+    },
+    {
+      "type": "select",
+      "id": "utc_offset",
+      "label": "Time zone",
+      "options": [
+        { "value": "+01:00", "label": "Stockholm (winter time)" },
+        { "value": "+02:00", "label": "Stockholm (summer time)" },
+        { "value": "-05:00", "label": "New York (winter time)" },
+        { "value": "+11:00", "label": "Sydney (summer time)" }
+      ],
+      "default": "+01:00"
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_logo",
+      "label": "Show logo",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Small text above heading",
+      "default": "Drop 01"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Thermal Henley"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Text below heading",
+      "default": "27.11.2026 · No future? Build one."
+    },
+    {
+      "type": "header",
+      "content": "When the drop is live"
+    },
+    {
+      "type": "text",
+      "id": "live_text",
+      "label": "Live message",
+      "default": "The drop is live"
+    },
+    {
+      "type": "text",
+      "id": "live_button",
+      "label": "Button text",
+      "default": "Shop the drop"
+    },
+    {
+      "type": "url",
+      "id": "live_link",
+      "label": "Button link",
+      "default": "/collections/all"
+    },
+    {
+      "type": "header",
+      "content": "Waiting list"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_signup",
+      "label": "Show email sign-up",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "email_placeholder",
+      "label": "Email box text",
+      "default": "Your email"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button text",
+      "default": "Join the list"
+    },
+    {
+      "type": "text",
+      "id": "small_print",
+      "label": "Small print",
+      "default": "Be first in line when it drops. No spam."
+    },
+    {
+      "type": "text",
+      "id": "success_text",
+      "label": "Thank-you message",
+      "default": "You're on the list. Stay relentless."
+    },
+    {
+      "type": "text",
+      "id": "customer_tags",
+      "label": "Customer tags",
+      "info": "Sign-ups get these tags in Shopify Customers, so you can find them later.",
+      "default": "waitlist, thermal-henley"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#1F1E1C"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#E6DFD1"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent (red)",
+      "default": "#C8102E"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Drop countdown"
+    }
+  ]
+}
+{% endschema %}
