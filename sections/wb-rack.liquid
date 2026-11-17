@@ -787,6 +787,95 @@
         return { cw: cw * s, ch: ch * s };
       }
 
+      // Reads the photo's transparent edges and returns how high the garment reaches in every column.
+      shoulders(src) {
+        this.shoulderCache = this.shoulderCache || new Map();
+        if (this.shoulderCache.has(src)) return this.shoulderCache.get(src);
+        const job = new Promise((resolve) => {
+          const im = new Image();
+          im.crossOrigin = 'anonymous';
+          im.onload = () => {
+            try {
+              const k = 240 / Math.max(im.naturalWidth, im.naturalHeight);
+              const w = Math.max(1, Math.round(im.naturalWidth * k));
+              const h = Math.max(1, Math.round(im.naturalHeight * k));
+              const c = document.createElement('canvas');
+              c.width = w; c.height = h;
+              const ctx = c.getContext('2d');
+              ctx.drawImage(im, 0, 0, w, h);
+              const d = ctx.getImageData(0, 0, w, h).data;
+              const top = [];
+              let solid = 0;
+              for (let x = 0; x < w; x++) {
+                let y = 0;
+                while (y < h && d[(y * w + x) * 4 + 3] <= 24) y++;
+                top.push(y < h ? y / h : null);
+                if (y === 0) solid++;
+              }
+              // Photos without a transparent background can't be traced, so they just get the hook.
+              resolve(solid > w * 0.5 ? null : { w, top });
+            } catch (e) { resolve(null); }
+          };
+          im.onerror = () => resolve(null);
+          im.src = src;
+        });
+        this.shoulderCache.set(src, job);
+        return job;
+      }
+
+      // Bends the hanger's arms so they rest right on top of the garment's shoulders.
+      async drape(hanger, img) {
+        const arms = hanger && hanger.querySelectorAll('.wb-hanger__arm');
+        if (!arms || !arms.length || !img) return;
+        const p = await this.shoulders(img.currentSrc || img.src);
+        try {
+          await Promise.all(this.getAnimations({ subtree: true })
+            .filter((a) => a.effect && a.effect.getComputedTiming().iterations !== Infinity)
+            .map((a) => a.finished.catch(() => {})));
+        } catch (e) {}
+        let d = '';
+        if (p) {
+          const hr = hanger.getBoundingClientRect();
+          const ir = img.getBoundingClientRect();
+          const s = hr.width / 200;
+          const T = p.top;
+          const cols = [];
+          for (let x = 0; x < p.w; x++) if (T[x] !== null) cols.push(x);
+          if (s > 0 && ir.width > 0 && cols.length > 8) {
+            const xl = cols[0], xr = cols[cols.length - 1], W = xr - xl, cx = Math.round((xl + xr) / 2);
+            const side = (dir) => {
+              let c = cx;
+              for (let x = cx; Math.abs(x - cx) <= W * 0.25; x += dir) if (T[x] !== null && T[x] <= T[c]) c = x;
+              let t = c;
+              for (let x = c; Math.abs(x - cx) <= W * 0.34; x += dir) {
+                const n = x + dir * 3;
+                if (T[n] == null || (T[n] - T[x]) * p.w / 3 > 1) break;
+                t = x;
+              }
+              return [c, t];
+            };
+            const y = (x) => {
+              let sum = 0, n = 0;
+              for (let j = x - 3; j <= x + 3; j++) if (T[j] != null) { sum += T[j]; n++; }
+              return n ? sum / n : T[x];
+            };
+            const pt = (x, yy, up) => {
+              const gx = ir.left + (x + 0.5) / p.w * ir.width;
+              const gy = ir.top + yy * ir.height - up;
+              return ((gx - hr.left) / s).toFixed(1) + ' ' + ((gy - hr.top) / s).toFixed(1);
+            };
+            const [cl, tl] = side(-1);
+            const [cr, tr] = side(1);
+            const pts = [];
+            for (let x = tl; x <= cl; x++) pts.push(pt(x, y(x), 1.2));
+            pts.push(pt(cx, T[cx], -3));
+            for (let x = cr; x <= tr; x++) pts.push(pt(x, y(x), 1.2));
+            d = 'M' + pts.join(' L');
+          }
+        }
+        arms.forEach((a) => a.setAttribute('d', d));
+      }
+
       fitRack() {
         this.querySelectorAll('.wb-rack__garment[data-index]').forEach(async (g) => {
           const box = g.querySelector('[data-fit]');
@@ -798,10 +887,12 @@
           const size = this.place(box, img, bb);
           if (!size) return;
           const hw = Math.min(size.cw * 0.5, box.clientWidth * 0.95);
-          const top = 2 - hw * 0.012;
+          // Hook sits over the rail: the inside of its curl rests on top of the rod.
+          const top = -0.5 + hw * 0.0285;
           hanger.style.width = hw + 'px';
           hanger.style.top = top + 'px';
           box.style.top = top + hw * 0.2 + 'px';
+          this.drape(hanger, img);
         });
       }
 
@@ -821,6 +912,7 @@
         }
         piece.style.setProperty('--piece-hanger', hw + 'px');
         this.place(fit, img, bb);
+        this.drape(hanger, img);
       }
 
       colorFor(c) {
