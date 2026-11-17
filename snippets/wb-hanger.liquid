@@ -1,5 +1,7 @@
-{%- comment -%} Wire hanger with a chrome hook. Use: render 'wb-hanger', class: 'my-class' {%- endcomment -%}
+{%- comment -%} Wire hanger with a chrome hook. The two "arm" lines are shaped by the rack script so they rest on the garment's shoulders. Use: render 'wb-hanger', class: 'my-class' {%- endcomment -%}
 <svg class="{{ class }}" viewBox="0 0 200 66" aria-hidden="true" focusable="false">
-  <path d="M100 46 C100 22 100 18 100 16 C100 10 106 7 106 3 C106 -1 101 -3 97 -1 C94 0.5 93 3 93.5 5" fill="none" stroke="#9a9a9a" stroke-width="2.6" stroke-linecap="round"/>
-  <path d="M100 46 C100 22 100 18 100 16 C100 10 106 7 106 3 C106 -1 101 -3 97 -1 C94 0.5 93 3 93.5 5" fill="none" stroke="#e9e9e9" stroke-width="1" stroke-linecap="round"/>
-  </svg>
+  <path class="wb-hanger__arm" d="" fill="none" stroke="#1c1c1c" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="wb-hanger__arm" d="" fill="none" stroke="#5a5a5a" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+  <path d="M100 46 L100 17 C100 12 107 10 107 3 C107 -4 101 -7 96 -5 C92 -3.5 91 0 91.5 3" fill="none" stroke="#9a9a9a" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M100 46 L100 17 C100 12 107 10 107 3 C107 -4 101 -7 96 -5 C92 -3.5 91 0 91.5 3" fill="none" stroke="#e9e9e9" stroke-width="1" stroke-linecap="round"/>
+</svg>
