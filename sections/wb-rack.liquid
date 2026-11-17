@@ -874,9 +874,9 @@
             const [cl, tl] = side(-1);
             const [cr, tr] = side(1);
             const pts = [];
-            for (let x = tl; x <= cl; x++) pts.push(pt(x, y(x), 1.2));
+            for (let x = tl; x <= cl; x++) pts.push(pt(x, y(x), 0.3));
             pts.push(pt(cx, T[cx], -3));
-            for (let x = cr; x <= tr; x++) pts.push(pt(x, y(x), 1.2));
+            for (let x = cr; x <= tr; x++) pts.push(pt(x, y(x), 0.3));
             d = 'M' + pts.join(' L');
           }
         }
